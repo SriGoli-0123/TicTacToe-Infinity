@@ -1,22 +1,48 @@
+// src/components/Game.js
 import React, { useState } from 'react';
 import Board from './Board';
 
 const Game = () => {
     const [boardSize, setBoardSize] = useState(3); // Default grid size
-    const [squares, setSquares] = useState(Array(boardSize).fill(Array(boardSize).fill(null)));
+    const [squares, setSquares] = useState(Array(boardSize).fill(null).map(() => Array(boardSize).fill(null)));
     const [xIsNext, setXIsNext] = useState(true);
+    const [xMarksQueue, setXMarksQueue] = useState([]); // To track the positions of X marks
+    const [oMarksQueue, setOMarksQueue] = useState([]); // To track the positions of O marks
 
     const handleClick = (i, j) => {
         if (squares[i][j] || calculateWinner(squares, boardSize)) return;
 
-        const newSquares = squares.map((row, rowIndex) => {
-            return row.map((col, colIndex) => {
-                if (rowIndex === i && colIndex === j) {
-                    return xIsNext ? 'X' : 'O';
-                }
-                return col;
-            });
-        });
+        const newSquares = squares.map(row => row.slice());
+        const mark = xIsNext ? 'X' : 'O';
+
+        // Add the new mark
+        newSquares[i][j] = mark;
+
+        let newMarksQueue = mark === 'X' ? [...xMarksQueue] : [...oMarksQueue];
+        newMarksQueue.push({ i, j });
+
+        // Check if removing the oldest mark would prevent a win
+        if (newMarksQueue.length > 3) {
+            const oldestMark = newMarksQueue[0];
+            newSquares[oldestMark.i][oldestMark.j] = null;
+
+            // Check if this move creates a winning line
+            if (!calculateWinner(newSquares, boardSize)) {
+                // If no winner, remove the oldest mark from the queue
+                newMarksQueue.shift();
+            } else {
+                // If a winner is found, don't remove the mark, let the player win
+                newSquares[oldestMark.i][oldestMark.j] = mark;
+                newMarksQueue.pop();
+            }
+        }
+
+        // Update state
+        if (mark === 'X') {
+            setXMarksQueue(newMarksQueue);
+        } else {
+            setOMarksQueue(newMarksQueue);
+        }
 
         setSquares(newSquares);
         setXIsNext(!xIsNext);
@@ -24,7 +50,9 @@ const Game = () => {
 
     const resetGame = (size) => {
         setBoardSize(size);
-        setSquares(Array(size).fill(Array(size).fill(null)));
+        setSquares(Array(size).fill(null).map(() => Array(size).fill(null)));
+        setXMarksQueue([]);
+        setOMarksQueue([]);
         setXIsNext(true);
     };
 
