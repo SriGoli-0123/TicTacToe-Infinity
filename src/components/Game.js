@@ -1,4 +1,3 @@
-// src/components/Game.js
 import React, { useState } from 'react';
 import Board from './Board';
 
@@ -21,20 +20,10 @@ const Game = () => {
         let newMarksQueue = mark === 'X' ? [...xMarksQueue] : [...oMarksQueue];
         newMarksQueue.push({ i, j });
 
-        // Check if removing the oldest mark would prevent a win
-        if (newMarksQueue.length > 3) {
-            const oldestMark = newMarksQueue[0];
+        // Check if the queue exceeds the limit of n marks (where n = boardSize)
+        if (newMarksQueue.length > boardSize) {
+            const oldestMark = newMarksQueue.shift();
             newSquares[oldestMark.i][oldestMark.j] = null;
-
-            // Check if this move creates a winning line
-            if (!calculateWinner(newSquares, boardSize)) {
-                // If no winner, remove the oldest mark from the queue
-                newMarksQueue.shift();
-            } else {
-                // If a winner is found, don't remove the mark, let the player win
-                newSquares[oldestMark.i][oldestMark.j] = mark;
-                newMarksQueue.pop();
-            }
         }
 
         // Update state
@@ -102,6 +91,7 @@ const calculateWinner = (squares, size) => {
     lines.push(diagonal1);
     lines.push(diagonal2);
 
+    // Check for a winner
     for (let i = 0; i < lines.length; i++) {
         if (lines[i].every(val => val === 'X')) return 'X';
         if (lines[i].every(val => val === 'O')) return 'O';
