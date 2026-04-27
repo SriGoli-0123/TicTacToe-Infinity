@@ -1,28 +1,23 @@
 import React from 'react';
 import Square from './Square';
 
-const Board = ({ squares, onClick }) => {
-    const renderSquare = (i, j) => {
-        return (
-            <Square
-                key={`${i}-${j}`}
-                value={squares[i][j]}
-                onClick={() => onClick(i, j)}
-            />
-        );
-    };
-
-    const renderRow = (row, rowIndex) => {
-        return (
-            <div className="board-row" key={rowIndex}>
-                {row.map((_, colIndex) => renderSquare(rowIndex, colIndex))}
-            </div>
-        );
-    };
-
+const Board = ({ squares, onClick, xQueue, oQueue, winningLine }) => {
     return (
-        <div>
-            {squares.map((row, rowIndex) => renderRow(row, rowIndex))}
+        <div className="board" style={{ gridTemplateColumns: `repeat(${squares.length}, 1fr)` }}>
+            {squares.map((row, i) =>
+                row.map((val, j) => {
+                    const isWinningSquare = winningLine.some(pos => pos.i === i && pos.j === j);
+                    
+                    return (
+                        <Square 
+                            key={`${i}-${j}`} 
+                            value={val} 
+                            onClick={() => onClick(i, j)} 
+                            isWinning={isWinningSquare}
+                        />
+                    );
+                })
+            )}
         </div>
     );
 };
